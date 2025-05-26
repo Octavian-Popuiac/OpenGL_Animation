@@ -4,12 +4,12 @@ from animation.base_scene import BaseScene
 
 class KitchenDinnerScene(BaseScene):
     def __init__(self, scene, camera, renderer, scene_manager):
-        super().__init__(scene, camera, renderer)
+        super().__init__(scene, camera, renderer, scene_manager)
         self.scene_manager = scene_manager
         
         # 🍽️ CONFIGURAÇÕES DA CENA
         self.scene_name = "Cena 2 - Jantar com a Família"
-        self.scene_duration = 45.0  # 45 segundos total
+        self.scene_duration = 25
         
         # ⏰ TIMELINE MANUAL PARA DEBUG
         self.manual_timeline = 0.0
@@ -23,53 +23,12 @@ class KitchenDinnerScene(BaseScene):
         # 🚶 SISTEMA DE WAYPOINTS DO HUMANO
         self.waypoints = [
             {
-                "position": [14.0, 0.090, 0.0],  # Posição inicial na cozinha
-                "rotation": 0.0,  # Olhando para frente
-                "animation": "STANDING",
-                "duration": 3.0,
-                "description": "Entrada na cozinha - Chegando para jantar",
+                "position": [0.040, 0.300, -0.280], 
+                "rotation": 0.000,
+                "animation": "STATIC",  # Sem animação
+                "duration": 25.0,  # Toda a duração da cena
+                "description": "Posição do jantar familiar - Humano na mesa",
                 "movement_type": "static"
-            },
-            {
-                "position": [14.5, 0.090, -0.5],  # Se aproxima da mesa
-                "rotation": -(math.pi / 4),  # Vira para a mesa
-                "animation": "WALKING",
-                "duration": 2.0,
-                "description": "Caminhando para a mesa",
-                "movement_type": "smooth",
-                "auto_face_while_moving": True
-            },
-            {
-                "position": [14.5, 0.090, -0.5],  # Parado na mesa
-                "rotation": -(math.pi / 4),
-                "animation": "IDLE",
-                "duration": 8.0,
-                "description": "Sentado à mesa - Conversa inicial normal",
-                "movement_type": "static"
-            },
-            {
-                "position": [14.5, 0.090, -0.5],  # Mesma posição
-                "rotation": -(math.pi / 2),  # Vira ligeiramente (desconforto)
-                "animation": "IDLE",
-                "duration": 10.0,
-                "description": "Pergunta sobre o futuro - Começa tensão",
-                "movement_type": "static"
-            },
-            {
-                "position": [14.3, 0.090, -0.3],  # Recua ligeiramente
-                "rotation": -(math.pi / 3),  # Vira mais (fuga)
-                "animation": "IDLE",
-                "duration": 12.0,
-                "description": "Hesitação e desconforto - Isolamento",
-                "movement_type": "smooth"
-            },
-            {
-                "position": [14.0, 0.090, 0.0],  # Volta para posição inicial
-                "rotation": math.pi,  # De costas (isolamento total)
-                "animation": "IDLE",
-                "duration": 10.0,
-                "description": "Isolamento emocional - Final da cena",
-                "movement_type": "smooth"
             }
         ]
         
@@ -80,48 +39,13 @@ class KitchenDinnerScene(BaseScene):
         # 📷 SISTEMA DE CÂMERAS ESPECÍFICO DA SCENE02
         self.camera_keyframes = [
             {
-                "position_start": [15.0, 1.2, 1.0],  # Vista geral inicial
-                "position_end": [14.8, 1.0, 0.8],    # Se aproxima ligeiramente
-                "rotation": -2.356,  # -135° (olha para a mesa)
-                "duration": 5.0,
-                "description": "Estabelece ambiente familiar",
-                "movement_type": "smooth_zoom_in"
-            },
-            {
-                "position_start": [14.2, 0.8, -0.2],  # Close-up da conversa
-                "position_end": [14.2, 0.8, -0.2],    # Estática
-                "rotation": 0.785,  # 45° (foco no humano)
-                "duration": 8.0,
-                "description": "Conversa normal - Close-up",
-                "movement_type": "static",
-                "look_at_human": True
-            },
-            {
-                "position_start": [15.2, 1.5, -0.8],  # Vista elevada (tensão)
-                "position_end": [15.2, 1.5, -0.8],    # Estática
-                "rotation": -1.571,  # -90° (ângulo tenso)
-                "duration": 10.0,
-                "description": "Pergunta sobre futuro - Ângulo de tensão",
-                "movement_type": "static",
-                "look_at_human": False
-            },
-            {
-                "position_start": [13.5, 0.5, 0.5],   # Câmera baixa (opressão)
-                "position_end": [13.5, 0.5, 0.5],     # Estática
-                "rotation": 0.524,  # 30° (ângulo opressivo)
-                "duration": 12.0,
-                "description": "Hesitação e desconforto - Câmera opressiva",
-                "movement_type": "static",
-                "look_at_human": True
-            },
-            {
-                "position_start": [13.0, 0.3, -1.0],  # Muito baixa (isolamento)
-                "position_end": [13.0, 0.3, -1.0],    # Estática
-                "rotation": 1.047,  # 60° (isolamento total)
-                "duration": 10.0,
-                "description": "Isolamento emocional - Câmera de isolamento",
-                "movement_type": "static",
-                "look_at_human": False
+                "position_start": [0.803, 0.904, 1.708],  # Posição inicial que você encontrou
+                "position_end": [0.037, 0.898, 0.422],    # Posição final que você encontrou
+                "rotation": -0.018,  # -1.0° (Yaw final)
+                "duration": 25.0,    # Toda a duração da cena (45s)
+                "description": "Aproximação cinematográfica - Vista geral para close-up",
+                "movement_type": "smooth_approach",
+                "look_at_human": True  # Sempre olha para o humano
             }
         ]
         
@@ -134,28 +58,28 @@ class KitchenDinnerScene(BaseScene):
         self.lighting_phases = [
             {
                 "start_time": 0.0,
-                "end_time": 13.0,
+                "end_time": 8.0,
                 "brightness": 1.0,
                 "color": [1.0, 1.0, 1.0],  # Luz branca normal
                 "description": "Iluminação normal - Ambiente familiar"
             },
             {
-                "start_time": 13.0,
-                "end_time": 25.0,
+                "start_time": 8.0,
+                "end_time": 16.0,
                 "brightness": 0.8,
                 "color": [0.9, 0.8, 0.7],  # Ligeiramente amarelada
                 "description": "Início da tensão - Luz mais quente"
             },
             {
-                "start_time": 25.0,
-                "end_time": 35.0,
+                "start_time": 16.0,
+                "end_time": 20.0,
                 "brightness": 0.6,
                 "color": [0.8, 0.7, 0.6],  # Mais escura e amarelada
                 "description": "Desconforto - Luz mais escura"
             },
             {
-                "start_time": 35.0,
-                "end_time": 45.0,
+                "start_time": 20.0,
+                "end_time": 25.0,
                 "brightness": 0.4,
                 "color": [0.7, 0.6, 0.5],  # Muito escura e sépia
                 "description": "Isolamento - Luz dramática"
@@ -166,48 +90,42 @@ class KitchenDinnerScene(BaseScene):
         self.audio_phases = [
             {
                 "start_time": 0.0,
-                "end_time": 13.0,
+                "end_time": 8.0,
                 "volume": 1.0,
                 "description": "Sons normais - Talheres, conversa"
             },
             {
-                "start_time": 13.0,
-                "end_time": 25.0,
+                "start_time": 8.0,
+                "end_time": 16.0,
                 "volume": 0.8,
                 "description": "Sons começam a abafar"
             },
             {
-                "start_time": 25.0,
-                "end_time": 35.0,
+                "start_time": 16.0,
+                "end_time": 20.0,
                 "volume": 0.5,
                 "description": "Sons mais abafados - Isolamento"
             },
             {
-                "start_time": 35.0,
-                "end_time": 45.0,
+                "start_time": 20.0,
+                "end_time": 25.0,
                 "volume": 0.2,
                 "description": "Quase silêncio - Isolamento total"
             }
         ]
     
     def get_duration(self):
-        """Retorna duração total da cena"""
         return self.scene_duration
     
     def initialize(self):
-        """Inicializa a cena da cozinha"""
-        print(f"\n🍽️ ========== {self.scene_name.upper()} ==========")
-        print(f"⏱️ Duração estimada: {self.scene_duration}s")
+        
+        # 🗑️ LIMPA OBJETOS DA CENA ANTERIOR (Scene01)
+        self._cleanup_previous_scene()
         
         # 🏠 ADICIONA COZINHA
-        if hasattr(self.scene_manager, 'cozinha') and self.scene_manager.cozinha:
-            self.cozinha = self.scene_manager.cozinha
-            self.scene.add(self.cozinha)
-            print("✅ Cozinha adicionada à cena")
-        else:
-            print("❌ Cozinha não encontrada no scene_manager")
+        self._setup_kitchen()
         
-        # 🚶 CONFIGURA HUMANO
+        # 🚶 CONFIGURA HUMANO (apenas levantar[0])
         self._setup_human()
         
         # 📷 CONFIGURA SISTEMA DE CÂMERAS
@@ -217,12 +135,47 @@ class KitchenDinnerScene(BaseScene):
         self._setup_initial_lighting()
         
         print(f"🎬 Scene02 inicializada - Pronta para jantar familiar!")
-        print(f"🎯 Foco: Pressão social sobre o futuro")
+
+    def _cleanup_previous_scene(self):
+        """Remove todos os objetos da cena anterior"""
+        print("🗑️ Limpando objetos da Scene01...")
         
+        # Remove sala de música se ainda estiver na cena
+        if hasattr(self.scene_manager, 'sala_musica') and self.scene_manager.sala_musica:
+            try:
+                self.scene.remove(self.scene_manager.sala_musica)
+                print("   ✅ Sala de música removida")
+            except:
+                print("   ⚠️ Sala de música já havia sido removida")
+        
+        # Remove humano se ainda estiver na cena
+        if self.scene_manager.humano:
+            try:
+                self.scene.remove(self.scene_manager.humano)
+                print("   ✅ Humano anterior removido")
+            except:
+                print("   ⚠️ Humano anterior já havia sido removido")
+        
+        # Limpa referências
+        self.scene_manager.humano = None
+        self.scene_manager.human_scene_reference = None
+        
+        print("✅ Limpeza da Scene01 concluída")
+
+    def _setup_kitchen(self):
+        """Configura ambiente da cozinha"""
+        if hasattr(self.scene_manager, 'cozinha') and self.scene_manager.cozinha:
+            self.cozinha = self.scene_manager.cozinha
+            self.cozinha.scale(0.7)
+            self.scene.add(self.cozinha)
+            print("✅ Cozinha adicionada à Scene02")
+        else:
+            print("❌ Cozinha não encontrada no scene_manager")
+
     def _setup_human(self):
-        """Configura o humano para a cena da cozinha"""
+        """Configura o humano para a cena da cozinha - APENAS levantar[0]"""
         if hasattr(self.scene_manager, 'levantar_frames') and self.scene_manager.levantar_frames:
-            # Usa primeiro frame da animação de levantar
+            # 🎯 USA APENAS O FRAME levantar[0] (conforme solicitado)
             self.humano = self.scene_manager.levantar_frames[0]
             
             # Define posição inicial
@@ -239,10 +192,7 @@ class KitchenDinnerScene(BaseScene):
             self.scene_manager.humano = self.humano
             self.scene_manager.current_human_position = initial_position.copy()
             self.scene_manager.current_human_rotation = initial_rotation
-            
-            print(f"✅ Humano configurado na cozinha:")
-            print(f"   📍 Posição: {initial_position}")
-            print(f"   🔄 Rotação: {initial_rotation:.3f} rad ({initial_rotation * 180 / math.pi:.1f}°)")
+            self.scene_manager.human_scene_reference = self.scene
             
             # 🎮 ATIVA CONTROLES MANUAIS EM MODO LIVRE
             if self.scene_manager.free_camera_mode:
@@ -251,25 +201,37 @@ class KitchenDinnerScene(BaseScene):
                     initial_position, 
                     initial_rotation
                 )
+                print("🎮 Controles manuais habilitados para posicionamento")
         else:
             print("❌ Frames de animação não encontrados")
     
     def _setup_camera_system(self):
-        """Configura sistema de câmeras da Scene02"""
+        """Configura sistema de câmera única da Scene02"""
         if not self.scene_manager.free_camera_mode:
             self.camera_system_active = True
             self.current_camera_keyframe = 0
             self.camera_keyframe_start_time = 0
             
-            # Aplica primeira câmera
+            # Aplica posição inicial da câmera
             first_keyframe = self.camera_keyframes[0]
             self.camera.set_position(first_keyframe["position_start"])
-            self._set_camera_rotation(first_keyframe["rotation"])
             
-            print(f"📷 SISTEMA DE CÂMERAS SCENE02 INICIADO")
-            print(f"   🎬 Keyframe 1/{len(self.camera_keyframes)}: {first_keyframe['description']}")
+            # Olha para o humano desde o início
+            if first_keyframe.get("look_at_human", False) and self.scene_manager.humano:
+                human_pos = self.scene_manager.get_human_look_at_position(0.3)
+                self.camera.look_at(human_pos)
+            
+            print(f"📷 CÂMERA ÚNICA SCENE02 INICIADA")
+            print(f"   🎬 {first_keyframe['description']}")
             print(f"   📍 Posição inicial: {first_keyframe['position_start']}")
-            print(f"   🔄 Rotação: {first_keyframe['rotation']:.3f} rad")
+            print(f"   📍 Posição final: {first_keyframe['position_end']}")
+            print(f"   ⏱️ Duração total: {first_keyframe['duration']}s")
+            print(f"   👁️ Sempre olhando para o humano")
+
+            if first_keyframe.get("look_at_human", False) and self.scene_manager.humano:
+              human_pos = self.scene_manager.get_human_look_at_position(0.3)
+              self.camera.look_at(human_pos)
+
         else:
             print("📷 Modo câmera livre - Sistema automático desabilitado")
     
@@ -284,7 +246,22 @@ class KitchenDinnerScene(BaseScene):
     def update(self, delta_time):
         """Atualiza a cena da cozinha"""
         # ⏰ ATUALIZA TIMELINE
+        if delta_time > 0.1:  # Máximo 100ms por frame
+            print(f"⚠️ DELTA_TIME ALTO: {delta_time:.3f}s - Limitando para 0.016s")
+            delta_time = 0.016  # ~60 FPS
+        
+        # ⏰ ATUALIZA TIMELINE
         self.manual_timeline += delta_time
+        
+        # 🔍 DEBUG A CADA 0.5 SEGUNDO (mais frequente)
+        current_half_second = int(self.manual_timeline * 2)  # A cada 0.5s
+        if not hasattr(self, 'last_debug_half_second'):
+            self.last_debug_half_second = -1
+        
+        if current_half_second != self.last_debug_half_second:
+            self.last_debug_half_second = current_half_second
+            if current_half_second % 10 == 0:  # Debug a cada 5 segundos
+                self._debug_scene_status()
         
         # 🔍 DEBUG A CADA SEGUNDO
         current_second = int(self.manual_timeline)
@@ -309,10 +286,6 @@ class KitchenDinnerScene(BaseScene):
         # ✅ VERIFICA SE CENA TERMINOU
         if self.manual_timeline >= self.scene_duration:
             self.is_finished = True
-            print(f"\n🍽️ ========== SCENE02 CONCLUÍDA ==========")
-            print(f"⏱️ Duração total: {self.manual_timeline:.1f}s")
-            print(f"🎯 Narrativa: Pressão social estabelecida")
-            print(f"🎨 Efeito visual: Escurecimento progressivo")
     
     def _update_human_waypoints(self, delta_time):
         """Atualiza movimento do humano pelos waypoints"""
@@ -356,145 +329,131 @@ class KitchenDinnerScene(BaseScene):
                 self.scene_manager.set_human_rotation(next_waypoint["rotation"])
     
     def _update_current_waypoint(self, time_in_waypoint):
-        """Atualiza o waypoint atual"""
+        """Atualiza o waypoint atual - SEM ANIMAÇÃO (só levantar[0])"""
         current_waypoint = self.waypoints[self.current_waypoint_index]
         
-        # Animação baseada no tipo
-        if current_waypoint["animation"] == "WALKING":
-            self._animate_walking(time_in_waypoint)
-        elif current_waypoint["animation"] == "IDLE":
-            self._animate_idle(time_in_waypoint)
-        elif current_waypoint["animation"] == "STANDING":
-            self._animate_standing(time_in_waypoint)
-    
+        # 🎭 NÃO FAZ ANIMAÇÃO - mantém sempre levantar[0]
+        # O humano já está configurado com levantar[0] e não muda
+        pass
+
     def _animate_walking(self, time_in_waypoint):
-        """Animação de caminhada"""
-        if hasattr(self.scene_manager, 'andar_frames') and self.scene_manager.andar_frames:
-            frame_rate = 8  # 8 FPS para caminhada
-            frame_index = int((time_in_waypoint * frame_rate) % len(self.scene_manager.andar_frames))
-            
-            new_frame = self.scene_manager.andar_frames[frame_index]
-            if new_frame != self.humano:
-                self._swap_human_frame(new_frame)
-    
+        """Animação desabilitada - mantém levantar[0]"""
+        # NÃO FAZ NADA - mantém frame fixo
+        pass
+
     def _animate_idle(self, time_in_waypoint):
-        """Animação parada (olhando)"""
-        if hasattr(self.scene_manager, 'olhar_frames') and self.scene_manager.olhar_frames:
-            frame_rate = 5  # 5 FPS para movimentos sutis
-            frame_index = int((time_in_waypoint * frame_rate) % len(self.scene_manager.olhar_frames))
-            
-            new_frame = self.scene_manager.olhar_frames[frame_index]
-            if new_frame != self.humano:
-                self._swap_human_frame(new_frame)
-    
+        """Animação desabilitada - mantém levantar[0]"""
+        # NÃO FAZ NADA - mantém frame fixo
+        pass
+
     def _animate_standing(self, time_in_waypoint):
-        """Animação de levantar"""
-        if hasattr(self.scene_manager, 'levantar_frames') and self.scene_manager.levantar_frames:
-            frame_rate = 6  # 6 FPS para levantar
-            frame_index = int((time_in_waypoint * frame_rate) % len(self.scene_manager.levantar_frames))
-            
-            new_frame = self.scene_manager.levantar_frames[frame_index]
-            if new_frame != self.humano:
-                self._swap_human_frame(new_frame)
-    
+        """Animação desabilitada - mantém levantar[0]"""
+        # NÃO FAZ NADA - mantém frame fixo
+        pass
+
     def _swap_human_frame(self, new_frame):
-        """Troca o frame do humano mantendo posição e rotação"""
-        if self.humano:
-            # Salva transformação atual
-            current_pos = self.scene_manager.current_human_position.copy()
-            current_rot = self.scene_manager.current_human_rotation
-            
-            # Remove frame atual
-            self.scene.remove(self.humano)
-            
-            # Adiciona novo frame
-            self.humano = new_frame
-            self.humano.set_position(current_pos)
-            self.humano.set_rotation_y(current_rot)
-            self.scene.add(self.humano)
-            
-            # Atualiza referência no scene_manager
-            self.scene_manager.humano = self.humano
+        """Troca de frame desabilitada - mantém levantar[0]"""
+        # NÃO FAZ NADA - mantém frame fixo
+        print("🚫 Troca de frames desabilitada na Scene02 - mantendo levantar[0]")
     
     def _update_camera_system(self, delta_time):
-        """Atualiza sistema de câmeras"""
-        if self.current_camera_keyframe >= len(self.camera_keyframes):
+        if not self.camera_system_active or self.current_camera_keyframe >= len(self.camera_keyframes):
             return
         
         current_keyframe = self.camera_keyframes[self.current_camera_keyframe]
         time_in_keyframe = self.manual_timeline - self.camera_keyframe_start_time
         
+        # 🔧 DEBUG: Monitora delta_time suspeito
+        if delta_time > 1.0:  # Se delta_time for maior que 1 segundo
+            print(f"⚠️ DELTA_TIME SUSPEITO: {delta_time:.3f}s - Limitando para 0.016s")
+            delta_time = 0.016  # Limita para ~60 FPS
+        
+        # 🔧 DEBUG detalhado inicial
+        if time_in_keyframe < 1.0:  # Primeiros segundos
+            print(f"📷 DEBUG INICIAL: timeline={self.manual_timeline:.3f}s, keyframe_time={time_in_keyframe:.3f}s, delta={delta_time:.3f}s")
+        
+        # ⚠️ SEMPRE ATUALIZA A CÂMERA
+        self._update_current_camera_keyframe(time_in_keyframe)
+        
+        # Só termina quando excede duração
         if time_in_keyframe >= current_keyframe["duration"]:
-            # Avança para próxima câmera
-            self._advance_to_next_camera_keyframe()
-        else:
-            # Atualiza câmera atual
-            self._update_current_camera_keyframe(time_in_keyframe)
+            print("📷 MOVIMENTO DE CÂMERA CONCLUÍDO")
+            self.camera_system_active = False
     
     def _advance_to_next_camera_keyframe(self):
-        """Avança para o próximo keyframe de câmera"""
         if self.current_camera_keyframe < len(self.camera_keyframes) - 1:
             self.current_camera_keyframe += 1
             self.camera_keyframe_start_time = self.manual_timeline
             
             next_keyframe = self.camera_keyframes[self.current_camera_keyframe]
+            print(f"📷 INICIANDO MOVIMENTO DE CÂMERA:")
+            print(f"   🎬 {next_keyframe['description']}")
+            print(f"   📍 De: {next_keyframe['position_start']}")
+            print(f"   📍 Para: {next_keyframe['position_end']}")
+            print(f"   ⏱️ Duração: {next_keyframe['duration']}s")
             
-            print(f"📷 MUDANÇA DE CÂMERA:")
-            print(f"   🎬 Keyframe {self.current_camera_keyframe + 1}/{len(self.camera_keyframes)}: {next_keyframe['description']}")
-            print(f"   📍 Nova posição: {next_keyframe['position_start']}")
-            
-            # Define posição inicial do novo keyframe
+            # Define posição inicial
             self.camera.set_position(next_keyframe["position_start"])
             
-            if next_keyframe.get("look_at_human", False):
-                if self.scene_manager.humano:
-                    human_pos = self.scene_manager.get_human_look_at_position()
-                    self.camera.look_at(human_pos)
-            else:
-                self._set_camera_rotation(next_keyframe["rotation"])
+            if next_keyframe.get("look_at_human", False) and self.scene_manager.humano:
+                human_pos = self.scene_manager.get_human_look_at_position(0.2)
+                self.camera.look_at(human_pos)
         else:
-            print("📷 SISTEMA DE CÂMERAS SCENE02 CONCLUÍDO")
+            print("📷 MOVIMENTO DE CÂMERA CONCLUÍDO")
             self.camera_system_active = False
     
     def _update_current_camera_keyframe(self, time_in_keyframe):
-        """Atualiza posição da câmera no keyframe atual"""
         current_keyframe = self.camera_keyframes[self.current_camera_keyframe]
         movement_type = current_keyframe["movement_type"]
         
-        if movement_type == "smooth_zoom_in":
-            # Movimento suave de zoom in
+        if movement_type == "smooth_approach":
+            # Movimento suave de aproximação ao longo de toda a cena
             progress = time_in_keyframe / current_keyframe["duration"]
-            progress = min(1.0, progress)
+            progress = min(1.0, max(0.0, progress))  # ← Garante 0-1
             
-            # Curva suave
-            smooth_progress = progress * progress * (3 - 2 * progress)
+            # 🎬 CURVA CINEMATOGRÁFICA
+            smooth_progress = self._ease_in_out_cubic(progress)
             
             start_pos = current_keyframe["position_start"]
             end_pos = current_keyframe["position_end"]
             
+            # Interpola posição
             current_pos = [
                 start_pos[0] + (end_pos[0] - start_pos[0]) * smooth_progress,
                 start_pos[1] + (end_pos[1] - start_pos[1]) * smooth_progress,
                 start_pos[2] + (end_pos[2] - start_pos[2]) * smooth_progress
             ]
             
+            # 🔧 FORÇA ATUALIZAÇÃO DA CÂMERA
             self.camera.set_position(current_pos)
             
-            # Sempre olha para o humano durante zoom
-            if self.scene_manager.humano:
-                human_pos = self.scene_manager.get_human_look_at_position()
+            # 👁️ SEMPRE OLHA PARA O HUMANO
+            if current_keyframe.get("look_at_human", False) and self.scene_manager.humano:
+                human_pos = self.scene_manager.get_human_look_at_position(0.3)
                 self.camera.look_at(human_pos)
-        
-        elif movement_type == "static":
-            # Câmera estática
-            self.camera.set_position(current_keyframe["position_start"])
             
-            if current_keyframe.get("look_at_human", False):
-                if self.scene_manager.humano:
-                    human_pos = self.scene_manager.get_human_look_at_position()
-                    self.camera.look_at(human_pos)
-            else:
-                self._set_camera_rotation(current_keyframe["rotation"])
+            # 📊 DEBUG mais frequente
+            progress_percent = int(progress * 20) * 5  # A cada 5%
+            if not hasattr(self, 'last_progress_debug'):
+                self.last_progress_debug = -1
+            
+            if progress_percent != self.last_progress_debug and progress_percent % 20 == 0:
+                print(f"📷 PROGRESSO: {progress_percent}% | Pos: [{current_pos[0]:.2f}, {current_pos[1]:.2f}, {current_pos[2]:.2f}]")
+                self.last_progress_debug = progress_percent
+        
+        else:
+            # Câmera estática (fallback)
+            self.camera.set_position(current_keyframe["position_start"])
+            if current_keyframe.get("look_at_human", False) and self.scene_manager.humano:
+                human_pos = self.scene_manager.get_human_look_at_position(0.3)
+                self.camera.look_at(human_pos)
+
+    def _ease_in_out_cubic(self, t):
+        """Curva de animação cinematográfica suave"""
+        if t < 0.5:
+            return 4 * t * t * t
+        else:
+            return 1 - pow(-2 * t + 2, 3) / 2
     
     def _set_camera_rotation(self, rotation_y):
         """Define rotação Y da câmera"""

@@ -17,6 +17,7 @@ MATERIAL_COLORS = {
     "pupilas.005":   [0.0, 0.0, 0.0],
     "bordegorra.002":[0.5, 0.5, 0.5],
     "Material.001":  [1.0, 0.0, 1.0],
+    
 }
 
 def parse_mtl_colors(mtl_path):

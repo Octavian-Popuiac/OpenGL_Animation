@@ -12,8 +12,12 @@ from geometry.cozinha import cozinhaGeometry
 from geometry.humano import humanoGeometry
 from extras.movement_rig import MovementRig
 
+from animation.effects.transitions import TransitionPresets, SceneTransitions
 
 from animation.scenes.scene01_music_room import MusicRoomScene
+from animation.scenes.scene02_dinner_room import KitchenDinnerScene
+from animation.scenes.scene03_bedroom import BedroomScene
+from animation.scenes.scene05_wakeup import WakeUpScene
 
 class SceneManager(Base):
     
@@ -27,6 +31,10 @@ class SceneManager(Base):
         self.movement_progress = 0.0
         self.movement_duration = 5.0  # 5 segundos para mover
         self.movement_callback = None  # Função chamada quando movimento acaba
+
+        self.transitions = SceneTransitions(self)
+        self.pending_scene_change = None
+
         super().__init__(**kwargs)
     
     def initialize(self):
@@ -45,7 +53,7 @@ class SceneManager(Base):
         print("✅ Sala de música carregada")
 
         # 🛏️ Cena do quarto
-        #self.quarto = quartoGeometry(0.1, 0.1, 0.1, my_obj_reader("scenes/bedroom_scene/quarto.obj"))
+        self.quarto = quartoGeometry(0.1, 0.1, 0.1, my_obj_reader("scenes/bedroom_scene/quarto.obj"))
         #self.quarto.set_position([7, 0, 0])
         # self.scene.add(self.quarto)
         print("✅ Quarto carregado")
@@ -60,7 +68,8 @@ class SceneManager(Base):
         self.andar_frames = []
         self.olhar_frames = []
         self.levantar_frames = []
-
+        self.dormir_frames = []
+        self.acordar_frames = []
         # Carrega animação de andar 
         try:
             andar_path = "scenes/human_body/andar"
@@ -106,6 +115,36 @@ class SceneManager(Base):
         except Exception as e:
             print(f"❌ Erro ao carregar frames de levantar: {e}")
 
+        # Carrega animação de dormir
+        try:
+            dormir_path = "scenes/human_body/dormir"
+            dormir_files = sorted([f for f in os.listdir(dormir_path) if f.endswith('.obj')])
+            
+            for i in range(0, len(dormir_files)):
+                file = dormir_files[i]
+                obj_data = my_obj_reader(os.path.join(dormir_path, file))
+                frame = humanoGeometry(obj_data, mtl_path="scenes/human_body/dormir/humano_dormir_1.mtl")
+                self.dormir_frames.append(frame)
+                
+            print(f"✅ Carregados {len(self.dormir_frames)} frames de dormir")
+        except Exception as e:
+            print(f"❌ Erro ao carregar frames de dormir: {e}")
+
+        # Carrega animação de acordar
+        try:
+            acordar_path = "scenes/human_body/acordar"
+            acordar_files = sorted([f for f in os.listdir(acordar_path) if f.endswith('.obj')])
+            
+            for i in range(0, len(acordar_files)):
+                file = acordar_files[i]
+                obj_data = my_obj_reader(os.path.join(acordar_path, file))
+                frame = humanoGeometry(obj_data, mtl_path="scenes/human_body/acordar/humano_acordar_1.mtl")
+                self.acordar_frames.append(frame)
+                
+            print(f"✅ Carregados {len(self.acordar_frames)} frames de acordar")
+        except Exception as e:
+            print(f"❌ Erro ao carregar frames de acordar: {e}")
+
         self.current_frame = 0
         self.frame_count = 0
         self.frame_rate = 5
@@ -121,9 +160,6 @@ class SceneManager(Base):
         
         
         print(f"✅ Pré-processamento concluído:")
-        print(f"   🏠 Objetos: Sala música, Quarto, Cozinha")
-        print(f"   🎭 Animações: {len(self.andar_frames)} andar, {len(self.olhar_frames)} olhar, {len(self.levantar_frames)} levantar")
-        print(f"💡 Objetos e humano serão adicionados pelas cenas específicas")       
 
         # 📷 Configuração da câmera baseada no modo
         if self.free_camera_mode:
@@ -155,8 +191,10 @@ class SceneManager(Base):
 
         # Lista de cenas
         self.scenes = [
-            MusicRoomScene(self.scene, self.camera, self.renderer, self),
-            KitchenDinnerScene(self.scene, self.camera, self.renderer, self),
+            #MusicRoomScene(self.scene, self.camera, self.renderer, self),
+            #KitchenDinnerScene(self.scene, self.camera, self.renderer, self),
+            #BedroomScene(self.scene, self.camera, self.renderer, self),
+            WakeUpScene(self.scene, self.camera, self.renderer, self),
         ]
         
         self.current_scene_index = 0
@@ -166,16 +204,90 @@ class SceneManager(Base):
         self.start_scene(0)
     
     def start_scene(self, index):
-        """Inicia uma cena específica"""
         if 0 <= index < len(self.scenes):
-            self.current_scene_index = index
-            self.current_scene = self.scenes[index]
-            self.current_scene.initialize()
             
-            print(f"🎬 Iniciando cena {index + 1}/{len(self.scenes)}")
+            if self.current_scene_index is not None and index != 0:
+                self._start_scene_with_transition(index)
+            else:
+                self._direct_scene_change(index)
         else:
             print("🎭 Todas as cenas concluídas!")
             self.running = False
+    
+    def _start_scene_with_transition(self, next_index):
+        current_scene_type = self._get_scene_type(self.current_scene_index)
+        next_scene_type = self._get_scene_type(next_index)
+        
+        # Escolhe transição apropriada
+        transition_config = TransitionPresets.get_scene_transition(current_scene_type, next_scene_type)
+        
+        print(f"🌟 TRANSIÇÃO: {current_scene_type} → {next_scene_type}")
+        print(f"   🎬 Tipo: {transition_config['type']}")
+        print(f"   ⏱️ Duração: {transition_config['duration']}s")
+        print(f"   📝 Descrição: {transition_config['description']}")
+        
+        # Inicia transição
+        self.transitions.start_transition(
+            transition_config["type"], 
+            transition_config["duration"]
+        )
+        
+        # Agenda mudança de cena para quando transição terminar
+        self.pending_scene_change = next_index
+    
+    def cleanup_scene_objects(self):
+        # Remove humano
+        if self.humano:
+            try:
+                if self.human_scene_reference:
+                    self.human_scene_reference.remove(self.humano)
+                self.humano = None
+                self.human_scene_reference = None
+                print("   ✅ Humano removido")
+            except:
+                print("   ⚠️ Erro ao remover humano")
+        
+        # Remove sala de música
+        if hasattr(self, 'sala_musica') and self.sala_musica:
+            try:
+                self.scene.remove(self.sala_musica)
+                print("   ✅ Sala de música removida")
+            except:
+                print("   ⚠️ Sala de música já removida")
+        
+        # Remove cozinha
+        if hasattr(self, 'cozinha') and self.cozinha:
+            try:
+                self.scene.remove(self.cozinha)
+                print("   ✅ Cozinha removida")
+            except:
+                print("   ⚠️ Cozinha já removida")
+
+    def _direct_scene_change(self, index):
+        if self.current_scene:
+            print(f"🗑️ Limpando {self.current_scene.__class__.__name__}...")
+        
+        self.current_scene_index = index
+        self.current_scene = self.scenes[index]
+        self.current_scene.initialize()
+        
+        # 🔧 VERIFICA SE SCENE_NAME EXISTE
+        scene_name = getattr(self.current_scene, 'scene_name', f'Cena {index + 1}')
+        
+        print(f"🎬 Iniciando cena {index + 1}/{len(self.scenes)}: {scene_name}")
+    
+    def _get_scene_type(self, scene_index):
+        """Retorna tipo da cena baseado no índice"""
+        if scene_index == 0:
+            return "music_room"
+        elif scene_index == 1:
+            return "kitchen"
+        elif scene_index == 2:
+            return "bedroom"
+        elif scene_index == 4:
+            return "wakeup"
+        else:
+            return "unknown"
     
     def update(self):
         # Atualiza câmera livre se estiver no modo livre
@@ -207,6 +319,17 @@ class SceneManager(Base):
             if self.manual_control_enabled and self.is_moving_to_target:
                 self.manual_control_enabled = False
                 print("🚶 Controles desabilitados durante movimento automático")
+
+        if self.transitions.is_active():
+            transition_finished = self.transitions.update(self.delta_time)
+            
+            # Se transição terminou e há cena pendente
+            if transition_finished and self.pending_scene_change is not None:
+                self._direct_scene_change(self.pending_scene_change)
+                self.pending_scene_change = None
+            
+            # Durante transição, não atualiza cena atual
+            return
         
         if self.current_scene:
             self.current_scene.update(self.delta_time)
@@ -872,11 +995,11 @@ class SceneManager(Base):
         
         return best_option
     
-    def get_human_look_at_position(self, height_offset=0.8):
-        """Retorna posição do humano ajustada para câmeras olharem para cima"""
+    def get_human_look_at_position(self, height_offset):
         human_pos = self.get_human_position()
         return [
             human_pos[0],
-            human_pos[1] + height_offset,  # Adiciona altura (padrão: 0.8m)
+            human_pos[1] + height_offset,
             human_pos[2]
         ]
+    

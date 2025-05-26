@@ -5,6 +5,7 @@ class MusicRoomScene(BaseScene):
     
     def __init__(self, scene, camera, renderer, scene_manager):
         super().__init__(scene, camera, renderer)
+        self.scene_name = "Scene01 - Sala de Música"
         self.scene_manager = scene_manager
         self.manual_timeline = 0
         self.time_scale = 1.0  # Velocidade normal
@@ -544,6 +545,18 @@ class MusicRoomScene(BaseScene):
             print(f"   🔄 Rotação final: {self.scene_manager.get_human_rotation():.3f} rad")
             print(f"   ⏱️ Tempo total: {self.manual_timeline:.1f}s")
             print(f"🎭 CENA 1 FINALIZADA - Transicionando para próxima cena...")
+            
+            # 🗑️ REMOVE HUMANO DA CENA
+            if self.scene_manager.humano:
+                self.scene.remove(self.scene_manager.humano)
+            
+            # 🏠 REMOVE SALA DE MÚSICA DA CENA
+            if hasattr(self.scene_manager, 'sala_musica') and self.scene_manager.sala_musica:
+                self.scene.remove(self.scene_manager.sala_musica)
+            
+            # 🔧 LIMPA REFERÊNCIAS
+            self.scene_manager.humano = None
+            self.scene_manager.human_scene_reference = None
             
             # Marca a cena como finalizada
             self.is_finished = True
