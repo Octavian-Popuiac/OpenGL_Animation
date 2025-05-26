@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import pathlib
 import sys
 import pygame
@@ -160,12 +159,12 @@ class Example(Base):
         key_angle_map = {
             frozenset(['w']): 0,      # W = para frente = 0°
             frozenset(['s']): 180,    # S = para trás = 180°
-            frozenset(['a']): 270,     # A = esquerda = 90° (CORRIGIDO: era 270°)
-            frozenset(['d']): 90,    # D = direita = 270° (CORRIGIDO: era 90°)
-            frozenset(['w', 'a']): 315,    # W+A = diagonal frente-esquerda (CORRIGIDO: era 315°)
-            frozenset(['w', 'd']): 45,   # W+D = diagonal frente-direita (CORRIGIDO: era 45°)
-            frozenset(['s', 'a']): 225,   # S+A = diagonal trás-esquerda (CORRIGIDO: era 225°)
-            frozenset(['s', 'd']): 135,   # S+D = diagonal trás-direita (CORRIGIDO: era 135°)
+            frozenset(['a']): 270,     # A = esquerda = 90° 
+            frozenset(['d']): 90,    # D = direita = 270°
+            frozenset(['w', 'a']): 315,    # W+A = diagonal frente-esquerda
+            frozenset(['w', 'd']): 45,   # W+D = diagonal frente-direita 
+            frozenset(['s', 'a']): 225,   # S+A = diagonal trás-esquerda 
+            frozenset(['s', 'd']): 135,   # S+D = diagonal trás-direita 
         }
 
         # Detecta teclas pressionadas
@@ -185,10 +184,8 @@ class Example(Base):
             if angle is not None:
                 self.human_rotation = angle
 
-        # 🔧 PRIMEIRO: Atualiza movimento da câmera
         self.camera_rig.update(self.input, self.delta_time)
 
-        # 🔧 DEPOIS: Se temos um personagem carregado, anima-o
         if hasattr(self, 'humano') and self.humano:
             # Atualiza estado de animação
             if walking != self.is_walking:

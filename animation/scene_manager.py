@@ -1,6 +1,7 @@
 import os
 import math
 import time
+import re
 from core.base import Base
 from core_ext.camera import Camera
 from core_ext.renderer import Renderer
@@ -11,6 +12,8 @@ from geometry.quarto import quartoGeometry
 from geometry.cozinha import cozinhaGeometry
 from geometry.humano import humanoGeometry
 from extras.movement_rig import MovementRig
+from geometry.rallyCar import RallyCarGeometry
+from geometry.rally import RallyTerrainGeometry
 
 from animation.effects.transitions import TransitionPresets, SceneTransitions
 
@@ -18,6 +21,7 @@ from animation.scenes.scene01_music_room import MusicRoomScene
 from animation.scenes.scene02_dinner_room import KitchenDinnerScene
 from animation.scenes.scene03_bedroom import BedroomScene
 from animation.scenes.scene05_wakeup import WakeUpScene
+from animation.scenes.scene04_rally import RallyScene
 
 class SceneManager(Base):
     
@@ -36,6 +40,10 @@ class SceneManager(Base):
         self.pending_scene_change = None
 
         super().__init__(**kwargs)
+
+    def extract_number(self,filename):
+        numbers = re.findall(r'\d+', filename)
+        return int(numbers[0]) if numbers else 0
     
     def initialize(self):
         print("🎬 VideoClip iniciado")
@@ -70,13 +78,17 @@ class SceneManager(Base):
         self.levantar_frames = []
         self.dormir_frames = []
         self.acordar_frames = []
+
+        
         # Carrega animação de andar 
         try:
             andar_path = "scenes/human_body/andar"
-            andar_files = sorted([f for f in os.listdir(andar_path) if f.endswith('.obj')])
+            andar_files = [f for f in os.listdir(andar_path) if f.endswith('.obj')]
+            andar_files = sorted(andar_files, key=self.extract_number)  # ← ORDENAÇÃO CORRETA
             
-            for i in range(0, len(andar_files)):
-                file = andar_files[i]
+            print(f"🚶 Arquivos de andar encontrados: {andar_files}")
+            
+            for i, file in enumerate(andar_files):
                 obj_data = my_obj_reader(os.path.join(andar_path, file))
                 frame = humanoGeometry(obj_data, mtl_path="scenes/human_body/andar/humano_andar_1.mtl")
                 self.andar_frames.append(frame)
@@ -85,13 +97,16 @@ class SceneManager(Base):
         except Exception as e:
             print(f"❌ Erro ao carregar frames de andar: {e}")
 
+
         # Carrega animação parada
         try:
             olhar_path = "scenes/human_body/olhar"
-            olhar_files = sorted([f for f in os.listdir(olhar_path) if f.endswith('.obj')])
+            olhar_files = [f for f in os.listdir(olhar_path) if f.endswith('.obj')]
+            olhar_files = sorted(olhar_files, key=self.extract_number)  # ← ORDENAÇÃO CORRETA
             
-            for i in range(0, len(olhar_files)):
-                file = olhar_files[i]
+            print(f"👀 Arquivos de olhar encontrados: {olhar_files}")
+            
+            for i, file in enumerate(olhar_files):
                 obj_data = my_obj_reader(os.path.join(olhar_path, file))
                 frame = humanoGeometry(obj_data, mtl_path="scenes/human_body/olhar/humano_olhar_1.mtl")
                 self.olhar_frames.append(frame)
@@ -103,10 +118,12 @@ class SceneManager(Base):
         # Carrega animação de levantar
         try:
             levantar_path = "scenes/human_body/sitStand"
-            levantar_files = sorted([f for f in os.listdir(levantar_path) if f.endswith('.obj')])
+            levantar_files = [f for f in os.listdir(levantar_path) if f.endswith('.obj')]
+            levantar_files = sorted(levantar_files, key=self.extract_number)  # ← ORDENAÇÃO CORRETA
             
-            for i in range(0, len(levantar_files)):
-                file = levantar_files[i]
+            print(f"🪑 Arquivos de levantar encontrados: {levantar_files}")
+            
+            for i, file in enumerate(levantar_files):
                 obj_data = my_obj_reader(os.path.join(levantar_path, file))
                 frame = humanoGeometry(obj_data, mtl_path="scenes/human_body/sitStand/humano_levantar_1.mtl")
                 self.levantar_frames.append(frame)
@@ -118,10 +135,12 @@ class SceneManager(Base):
         # Carrega animação de dormir
         try:
             dormir_path = "scenes/human_body/dormir"
-            dormir_files = sorted([f for f in os.listdir(dormir_path) if f.endswith('.obj')])
+            dormir_files = [f for f in os.listdir(dormir_path) if f.endswith('.obj')]
+            dormir_files = sorted(dormir_files, key=self.extract_number)  # ← ORDENAÇÃO CORRETA
             
-            for i in range(0, len(dormir_files)):
-                file = dormir_files[i]
+            print(f"😴 Arquivos de dormir encontrados: {dormir_files}")
+            
+            for i, file in enumerate(dormir_files):
                 obj_data = my_obj_reader(os.path.join(dormir_path, file))
                 frame = humanoGeometry(obj_data, mtl_path="scenes/human_body/dormir/humano_dormir_1.mtl")
                 self.dormir_frames.append(frame)
@@ -133,10 +152,18 @@ class SceneManager(Base):
         # Carrega animação de acordar
         try:
             acordar_path = "scenes/human_body/acordar"
-            acordar_files = sorted([f for f in os.listdir(acordar_path) if f.endswith('.obj')])
+            acordar_files = [f for f in os.listdir(acordar_path) if f.endswith('.obj')]
+            acordar_files = sorted(acordar_files, key=self.extract_number)  # ← ORDENAÇÃO CORRETA
             
-            for i in range(0, len(acordar_files)):
-                file = acordar_files[i]
+            print(f"🌅 Arquivos de acordar encontrados: {acordar_files}")
+            
+            # 🔍 DEBUG: Mostra ordem de carregamento
+            print(f"🔍 DEBUG - Ordem de carregamento dos frames de acordar:")
+            for i, filename in enumerate(acordar_files[:5]):  # Mostra só os 5 primeiros
+                number = self.extract_number(filename)
+                print(f"   Frame {i}: {filename} (número extraído: {number})")
+            
+            for i, file in enumerate(acordar_files):
                 obj_data = my_obj_reader(os.path.join(acordar_path, file))
                 frame = humanoGeometry(obj_data, mtl_path="scenes/human_body/acordar/humano_acordar_1.mtl")
                 self.acordar_frames.append(frame)
@@ -144,6 +171,27 @@ class SceneManager(Base):
             print(f"✅ Carregados {len(self.acordar_frames)} frames de acordar")
         except Exception as e:
             print(f"❌ Erro ao carregar frames de acordar: {e}")
+
+        try:
+            print("🏁 Carregando cena de rally...")
+            rally_obj = my_obj_reader("scenes/rally/rally.obj")
+            
+            # Ambos usam o mesmo arquivo
+            self.rally_terrain_geometry = RallyTerrainGeometry(scale=0.1, obj_data=rally_obj)
+            self.rally_car_geometry = RallyCarGeometry(scale=0.1, obj_data=rally_obj)
+            
+            # Otimizações
+            self.terrain_bounds = self.rally_terrain_geometry.get_terrain_bounds()
+            self.rally_car_geometry.optimize_for_rally()
+            
+            print(f"✅ Cena de rally carregada do arquivo único: rally.obj")
+            
+        except Exception as e:
+            print(f"⚠️ Erro ao carregar rally: {e}")
+            self.rally_terrain_geometry = RallyTerrainGeometry()
+            self.rally_car_geometry = RallyCarGeometry()
+            self.terrain_bounds = self.rally_terrain_geometry.get_terrain_bounds()
+            print("🔧 Usando cena de rally padrão")
 
         self.current_frame = 0
         self.frame_count = 0
@@ -194,7 +242,8 @@ class SceneManager(Base):
             #MusicRoomScene(self.scene, self.camera, self.renderer, self),
             #KitchenDinnerScene(self.scene, self.camera, self.renderer, self),
             #BedroomScene(self.scene, self.camera, self.renderer, self),
-            WakeUpScene(self.scene, self.camera, self.renderer, self),
+            RallyScene(self.scene, self.camera, self.renderer, self),
+            #WakeUpScene(self.scene, self.camera, self.renderer, self),
         ]
         
         self.current_scene_index = 0
@@ -236,6 +285,8 @@ class SceneManager(Base):
         self.pending_scene_change = next_index
     
     def cleanup_scene_objects(self):
+        print("🗑️ Limpando objetos das cenas anteriores...")
+        
         # Remove humano
         if self.humano:
             try:
@@ -244,24 +295,80 @@ class SceneManager(Base):
                 self.humano = None
                 self.human_scene_reference = None
                 print("   ✅ Humano removido")
-            except:
-                print("   ⚠️ Erro ao remover humano")
+            except Exception as e:
+                print(f"   ⚠️ Erro ao remover humano: {e}")
         
         # Remove sala de música
         if hasattr(self, 'sala_musica') and self.sala_musica:
             try:
                 self.scene.remove(self.sala_musica)
                 print("   ✅ Sala de música removida")
-            except:
-                print("   ⚠️ Sala de música já removida")
+            except Exception as e:
+                print(f"   ⚠️ Sala de música já removida: {e}")
         
         # Remove cozinha
         if hasattr(self, 'cozinha') and self.cozinha:
             try:
                 self.scene.remove(self.cozinha)
                 print("   ✅ Cozinha removida")
-            except:
-                print("   ⚠️ Cozinha já removida")
+            except Exception as e:
+                print(f"   ⚠️ Cozinha já removida: {e}")
+        
+        # Remove quarto
+        if hasattr(self, 'quarto') and self.quarto:
+            try:
+                self.scene.remove(self.quarto)
+                print("   ✅ Quarto removido")
+            except Exception as e:
+                print(f"   ⚠️ Quarto já removido: {e}")
+        
+        # 🏁 Remove terreno de rally
+        if hasattr(self, 'rally_terrain') and self.rally_terrain:
+            try:
+                self.scene.remove(self.rally_terrain)
+                print("   ✅ Terreno de rally removido")
+            except Exception as e:
+                print(f"   ⚠️ Terreno de rally já removido: {e}")
+        
+        # 🏎️ Remove carro de rally
+        if hasattr(self, 'rally_car') and self.rally_car:
+            try:
+                self.scene.remove(self.rally_car)
+                print("   ✅ Carro de rally removido")
+            except Exception as e:
+                print(f"   ⚠️ Carro de rally já removido: {e}")
+        
+        # 🔄 LIMPEZA AUTOMÁTICA - Remove todos os objetos mesh que não sejam câmera/luz
+        objects_to_remove = []
+        for obj in self.scene.children:
+            if hasattr(obj, 'geometry') and hasattr(obj.geometry, 'vertex_list'):
+                # Remove se não for câmera, luz ou camera_rig
+                if (not hasattr(obj, 'camera') and 
+                    not hasattr(obj, 'light') and 
+                    obj != self.camera_rig):
+                    objects_to_remove.append(obj)
+        
+        removed_count = 0
+        for obj in objects_to_remove:
+            try:
+                self.scene.remove(obj)
+                removed_count += 1
+            except Exception as e:
+                print(f"   ⚠️ Erro ao remover objeto: {e}")
+        
+        if removed_count > 0:
+            print(f"   🧹 {removed_count} objetos adicionais removidos automaticamente")
+        
+        # 🔧 RESET REFERENCIAS DE RALLY
+        if hasattr(self, 'rally_terrain'):
+            self.rally_terrain = None
+        if hasattr(self, 'rally_car'):
+            self.rally_car = None
+        
+        # 🔧 RESET CONTROLES MANUAIS
+        self.manual_control_enabled = False
+        
+        print("✅ Limpeza de cena concluída")
 
     def _direct_scene_change(self, index):
         if self.current_scene:
@@ -284,6 +391,8 @@ class SceneManager(Base):
             return "kitchen"
         elif scene_index == 2:
             return "bedroom"
+        elif scene_index == 3:
+            return "rally"
         elif scene_index == 4:
             return "wakeup"
         else:
