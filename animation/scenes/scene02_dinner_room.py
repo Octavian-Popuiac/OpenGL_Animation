@@ -4,7 +4,7 @@ from animation.base_scene import BaseScene
 
 class KitchenDinnerScene(BaseScene):
     def __init__(self, scene, camera, renderer, scene_manager):
-        super().__init__(scene, camera, renderer, scene_manager)
+        super().__init__(scene, camera, renderer)
         self.scene_manager = scene_manager
         
         # 🍽️ CONFIGURAÇÕES DA CENA
@@ -118,9 +118,6 @@ class KitchenDinnerScene(BaseScene):
         return self.scene_duration
     
     def initialize(self):
-        
-        # 🗑️ LIMPA OBJETOS DA CENA ANTERIOR (Scene01)
-        self._cleanup_previous_scene()
         
         # 🏠 ADICIONA COZINHA
         self._setup_kitchen()

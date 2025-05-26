@@ -12,8 +12,7 @@ from geometry.quarto import quartoGeometry
 from geometry.cozinha import cozinhaGeometry
 from geometry.humano import humanoGeometry
 from extras.movement_rig import MovementRig
-from geometry.rallyCar import RallyCarGeometry
-from geometry.rally import RallyTerrainGeometry
+from animation.effects.audio import audio_manager
 
 from animation.effects.transitions import TransitionPresets, SceneTransitions
 
@@ -39,6 +38,14 @@ class SceneManager(Base):
         self.transitions = SceneTransitions(self)
         self.pending_scene_change = None
 
+        # 🎵 SISTEMA DE ÁUDIO
+        self.audio_manager = audio_manager
+        
+        # 🌑 TRANSIÇÃO INICIAL
+        self.initial_transition_active = True
+        self.initial_transition_duration = 5.0
+        self.initial_transition_timer = 0.0
+
         super().__init__(**kwargs)
 
     def extract_number(self,filename):
@@ -48,6 +55,29 @@ class SceneManager(Base):
     def initialize(self):
         print("🎬 VideoClip iniciado")
         print(f"📷 Modo câmera: {'Livre' if self.free_camera_mode else 'Automática'}")
+
+        print("🎵 Inicializando sistema de áudio...")
+        if self.audio_manager.initialized:
+            print("✅ Sistema de áudio pronto")
+            
+            # 🎵 PRÉ-CARREGA MÚSICAS DO SEU PROJETO
+            print("🎵 Carregando músicas do projeto...")
+            self.audio_manager.load_music("Drigsan - Code.mp3", "drigsan_code")
+            self.audio_manager.load_music("happy.mp3", "happy")
+            self.audio_manager.load_music("tristeza.mp3", "tristeza")
+            self.audio_manager.load_music("Maison Dubai 3.mp3", "maison_dubai")
+            self.audio_manager.load_music("loop_trance.mp3", "loop_trance")
+            
+            # 🔊 PRÉ-CARREGA EFEITOS SONOROS
+            self.audio_manager.load_sound("aplausos.mp3", "aplausos")
+            self.audio_manager.load_sound("carsound.mp3", "carsound")
+            self.audio_manager.load_sound("mom2.mp3", "mom2")
+            self.audio_manager.load_sound("son.mp3", "son")
+            
+            print("✅ Todas as músicas carregadas")
+            
+        else:
+            print("❌ Sistema de áudio falhou - continuando sem som")
         
         self.renderer = Renderer([0.1, 0.1, 0.1])
         self.scene = Scene()
@@ -172,27 +202,6 @@ class SceneManager(Base):
         except Exception as e:
             print(f"❌ Erro ao carregar frames de acordar: {e}")
 
-        try:
-            print("🏁 Carregando cena de rally...")
-            rally_obj = my_obj_reader("scenes/rally/rally.obj")
-            
-            # Ambos usam o mesmo arquivo
-            self.rally_terrain_geometry = RallyTerrainGeometry(scale=0.1, obj_data=rally_obj)
-            self.rally_car_geometry = RallyCarGeometry(scale=0.1, obj_data=rally_obj)
-            
-            # Otimizações
-            self.terrain_bounds = self.rally_terrain_geometry.get_terrain_bounds()
-            self.rally_car_geometry.optimize_for_rally()
-            
-            print(f"✅ Cena de rally carregada do arquivo único: rally.obj")
-            
-        except Exception as e:
-            print(f"⚠️ Erro ao carregar rally: {e}")
-            self.rally_terrain_geometry = RallyTerrainGeometry()
-            self.rally_car_geometry = RallyCarGeometry()
-            self.terrain_bounds = self.rally_terrain_geometry.get_terrain_bounds()
-            print("🔧 Usando cena de rally padrão")
-
         self.current_frame = 0
         self.frame_count = 0
         self.frame_rate = 5
@@ -239,18 +248,57 @@ class SceneManager(Base):
 
         # Lista de cenas
         self.scenes = [
-            #MusicRoomScene(self.scene, self.camera, self.renderer, self),
-            #KitchenDinnerScene(self.scene, self.camera, self.renderer, self),
-            #BedroomScene(self.scene, self.camera, self.renderer, self),
+            MusicRoomScene(self.scene, self.camera, self.renderer, self),
+            KitchenDinnerScene(self.scene, self.camera, self.renderer, self),
+            BedroomScene(self.scene, self.camera, self.renderer, self),
             RallyScene(self.scene, self.camera, self.renderer, self),
-            #WakeUpScene(self.scene, self.camera, self.renderer, self),
+            WakeUpScene(self.scene, self.camera, self.renderer, self),
         ]
         
         self.current_scene_index = 0
         self.current_scene = None
         
         # Inicia primeira cena
-        self.start_scene(0)
+        print("🌑 Iniciando transição inicial de 5 segundos...")
+        self._start_initial_transition()
+
+    def _start_initial_transition(self):
+        """Inicia transição inicial de 5s antes da primeira cena"""
+        print("🌑 ===== TRANSIÇÃO INICIAL - 5s TELA PRETA =====")
+        
+        # 🧹 LIMPA SCENE COMPLETAMENTE
+        self._clean_scene_completely()
+        
+        # 🌑 CONFIGURA TELA PRETA
+        if hasattr(self.renderer, 'background_color'):
+            self.renderer.background_color = [0.0, 0.0, 0.0]  # Preto total
+        
+        # ⏱️ RESET TIMER
+        self.initial_transition_timer = 0.0
+        self.initial_transition_active = True
+        
+        print("🌑 Transição inicial configurada - 5s de tela preta")
+        print("🎵 Música 'Drigsan - Code' será iniciada na Scene01")
+
+    def _clean_scene_completely(self):
+        """Limpa scene completamente"""
+        try:
+            if hasattr(self.scene, 'children_list'):
+                objects_to_remove = []
+                
+                for obj in self.scene.children_list:
+                    # Preserva apenas câmera e camera_rig
+                    if (obj != self.camera and 
+                        obj != getattr(self, 'camera_rig', None)):
+                        objects_to_remove.append(obj)
+                
+                for obj in objects_to_remove:
+                    self.scene.remove(obj)
+                
+                print(f"🧹 Scene limpa: {len(objects_to_remove)} objetos removidos")
+                
+        except Exception as e:
+            print(f"❌ Erro na limpeza: {e}")
     
     def start_scene(self, index):
         if 0 <= index < len(self.scenes):
@@ -267,15 +315,21 @@ class SceneManager(Base):
         current_scene_type = self._get_scene_type(self.current_scene_index)
         next_scene_type = self._get_scene_type(next_index)
         
-        # Escolhe transição apropriada
+        # 🎵 FADE-OUT DA MÚSICA ATUAL durante transição
+        if self.audio_manager.is_music_playing:
+            print(f"🔇 Fazendo fade-out da música atual...")
+            self.audio_manager.stop_music(fade_out_time=2.0)
+        
+        # 🎬 SEMPRE USA TRANSIÇÃO PADRÃO (5s fade black)
         transition_config = TransitionPresets.get_scene_transition(current_scene_type, next_scene_type)
         
-        print(f"🌟 TRANSIÇÃO: {current_scene_type} → {next_scene_type}")
+        print(f"🌟 TRANSIÇÃO INICIADA: {current_scene_type} → {next_scene_type}")
         print(f"   🎬 Tipo: {transition_config['type']}")
-        print(f"   ⏱️ Duração: {transition_config['duration']}s")
-        print(f"   📝 Descrição: {transition_config['description']}")
+        print(f"   ⏱️ Duração: {transition_config['duration']}s (SEMPRE 5s)")
+        print(f"   🔇 Fade-out de música ativo")
+        print(f"   🧹 Scene será limpa IMEDIATAMENTE")
         
-        # Inicia transição
+        # 🌟 INICIA TRANSIÇÃO (que já limpa a cena automaticamente)
         self.transitions.start_transition(
             transition_config["type"], 
             transition_config["duration"]
@@ -283,92 +337,24 @@ class SceneManager(Base):
         
         # Agenda mudança de cena para quando transição terminar
         self.pending_scene_change = next_index
-    
+
+
     def cleanup_scene_objects(self):
-        print("🗑️ Limpando objetos das cenas anteriores...")
+        """Limpeza de objetos das cenas anteriores - SIMPLIFICADA"""
+        print("🗑️ Limpeza básica de referências...")
         
-        # Remove humano
-        if self.humano:
-            try:
-                if self.human_scene_reference:
-                    self.human_scene_reference.remove(self.humano)
-                self.humano = None
-                self.human_scene_reference = None
-                print("   ✅ Humano removido")
-            except Exception as e:
-                print(f"   ⚠️ Erro ao remover humano: {e}")
-        
-        # Remove sala de música
-        if hasattr(self, 'sala_musica') and self.sala_musica:
-            try:
-                self.scene.remove(self.sala_musica)
-                print("   ✅ Sala de música removida")
-            except Exception as e:
-                print(f"   ⚠️ Sala de música já removida: {e}")
-        
-        # Remove cozinha
-        if hasattr(self, 'cozinha') and self.cozinha:
-            try:
-                self.scene.remove(self.cozinha)
-                print("   ✅ Cozinha removida")
-            except Exception as e:
-                print(f"   ⚠️ Cozinha já removida: {e}")
-        
-        # Remove quarto
-        if hasattr(self, 'quarto') and self.quarto:
-            try:
-                self.scene.remove(self.quarto)
-                print("   ✅ Quarto removido")
-            except Exception as e:
-                print(f"   ⚠️ Quarto já removido: {e}")
-        
-        # 🏁 Remove terreno de rally
-        if hasattr(self, 'rally_terrain') and self.rally_terrain:
-            try:
-                self.scene.remove(self.rally_terrain)
-                print("   ✅ Terreno de rally removido")
-            except Exception as e:
-                print(f"   ⚠️ Terreno de rally já removido: {e}")
-        
-        # 🏎️ Remove carro de rally
-        if hasattr(self, 'rally_car') and self.rally_car:
-            try:
-                self.scene.remove(self.rally_car)
-                print("   ✅ Carro de rally removido")
-            except Exception as e:
-                print(f"   ⚠️ Carro de rally já removido: {e}")
-        
-        # 🔄 LIMPEZA AUTOMÁTICA - Remove todos os objetos mesh que não sejam câmera/luz
-        objects_to_remove = []
-        for obj in self.scene.children:
-            if hasattr(obj, 'geometry') and hasattr(obj.geometry, 'vertex_list'):
-                # Remove se não for câmera, luz ou camera_rig
-                if (not hasattr(obj, 'camera') and 
-                    not hasattr(obj, 'light') and 
-                    obj != self.camera_rig):
-                    objects_to_remove.append(obj)
-        
-        removed_count = 0
-        for obj in objects_to_remove:
-            try:
-                self.scene.remove(obj)
-                removed_count += 1
-            except Exception as e:
-                print(f"   ⚠️ Erro ao remover objeto: {e}")
-        
-        if removed_count > 0:
-            print(f"   🧹 {removed_count} objetos adicionais removidos automaticamente")
-        
-        # 🔧 RESET REFERENCIAS DE RALLY
-        if hasattr(self, 'rally_terrain'):
-            self.rally_terrain = None
-        if hasattr(self, 'rally_car'):
-            self.rally_car = None
-        
-        # 🔧 RESET CONTROLES MANUAIS
+        # 🔧 RESET SIMPLES DE REFERÊNCIAS (objetos já foram removidos pela transição)
+        self.humano = None
+        self.human_scene_reference = None
         self.manual_control_enabled = False
         
-        print("✅ Limpeza de cena concluída")
+        # 🔧 RESET OBJETOS ESPECÍFICOS
+        reset_objects = ['sala_musica', 'cozinha', 'quarto', 'rally_terrain', 'rally_car']
+        for obj_name in reset_objects:
+            if hasattr(self, obj_name):
+                setattr(self, obj_name, None)
+        
+        print("✅ Referências resetadas (objetos já removidos pela transição)")
 
     def _direct_scene_change(self, index):
         if self.current_scene:
@@ -399,6 +385,14 @@ class SceneManager(Base):
             return "unknown"
     
     def update(self):
+
+        if self.input and self.input.update():
+            pass
+        
+        # 🌑 ATUALIZA TRANSIÇÃO INICIAL
+        if self.initial_transition_active:
+            self._update_initial_transition()
+            return  # Não atualiza mais nada durante transição inicia
         # Atualiza câmera livre se estiver no modo livre
         if self.free_camera_mode and self.camera_rig:
             self.camera_rig.update(self.input, self.delta_time)
@@ -454,6 +448,51 @@ class SceneManager(Base):
         
         # Renderiza
         self.renderer.render(self.scene, self.camera)
+
+    def _update_initial_transition(self):
+        """Atualiza transição inicial de 5s"""
+        delta_time = self.delta_time
+        self.initial_transition_timer += delta_time
+        
+        # Debug a cada segundo
+        current_second = int(self.initial_transition_timer)
+        if hasattr(self, '_last_transition_second'):
+            if current_second != self._last_transition_second:
+                remaining = self.initial_transition_duration - self.initial_transition_timer
+                print(f"🌑 Transição inicial: {self.initial_transition_timer:.1f}s / {self.initial_transition_duration}s (restam {remaining:.1f}s)")
+                self._last_transition_second = current_second
+        else:
+            self._last_transition_second = current_second
+        
+        # Controles durante transição inicial
+        if self.input:
+            if self.input.is_key_pressed("space"):
+                print("🚀 Transição inicial pulada")
+                self._finish_initial_transition()
+                return
+            
+            if self.input.is_key_pressed("return"):
+                remaining = self.initial_transition_duration - self.initial_transition_timer
+                print(f"🌑 Status: {self.initial_transition_timer:.1f}s / {self.initial_transition_duration}s (restam {remaining:.1f}s)")
+        
+        # Verifica se terminou
+        if self.initial_transition_timer >= self.initial_transition_duration:
+            self._finish_initial_transition()
+
+    def _finish_initial_transition(self):
+        """Finaliza transição inicial e inicia Scene01"""
+        self.initial_transition_active = False
+        
+        print("✅ TRANSIÇÃO INICIAL CONCLUÍDA")
+        print("🎬 Iniciando Scene01 com música 'Drigsan - Code'")
+        
+        # 🎵 INICIA MÚSICA DA SCENE01 com fade-in
+        if self.audio_manager.initialized:
+            self.audio_manager.play_music("drigsan_code", loop=True, fade_in_time=2.0)
+            print("🎵 'Drigsan - Code' iniciada com fade-in de 2s")
+        
+        # 🎬 INICIA PRIMEIRA CENA
+        self.start_scene(0)
 
     def enable_human_controls(self, scene_reference, initial_position=None, initial_rotation=None):
         """Ativa controles manuais do humano para uma cena específica"""

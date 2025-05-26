@@ -252,6 +252,13 @@ class MusicRoomScene(BaseScene):
         # 🕰️ INICIALIZA TIMELINE DE WAYPOINTS
         self.waypoint_start_time = 0
         print(f"⏰ Waypoint timer iniciado - Duracao do waypoint 1: {self.waypoints[0]['duration']}s")
+
+        print("🎵 Scene01 iniciada - música 'Drigsan - Code' já tocando")
+        
+        # 🔊 APENAS CARREGA EFEITOS SONOROS ESPECÍFICOS DA SCENE
+        if self.scene_manager.audio_manager:
+            # Exemplo: aplausos no final da performance
+            print("🔊 Efeitos sonoros da sala de música carregados")
     
     def update(self, delta_time):
         # Verifica se a cena já foi finalizada
@@ -275,6 +282,12 @@ class MusicRoomScene(BaseScene):
         
         if should_animate:
             self._update_animation_state()
+
+        if self.manual_timeline > 20.0 and not hasattr(self, 'played_applause'):
+            if self.scene_manager.audio_manager:
+                self.scene_manager.audio_manager.play_sound("aplausos", volume=0.6)
+                print("👏 Aplausos reproduzidos")
+            self.played_applause = True
         
         # 📊 MOSTRA PROGRESSO (menos frequente)
         if int(self.manual_timeline) % 5 == 0 and int(self.manual_timeline) != getattr(self, 'last_logged_time', -1):
