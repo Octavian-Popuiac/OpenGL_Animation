@@ -13,6 +13,7 @@ from geometry.cozinha import cozinhaGeometry
 from geometry.humano import humanoGeometry
 from extras.movement_rig import MovementRig
 from animation.effects.audio import audio_manager
+from animation.effects.timeline import MusicTimeline
 
 from animation.effects.transitions import TransitionPresets, SceneTransitions
 
@@ -38,8 +39,11 @@ class SceneManager(Base):
         self.transitions = SceneTransitions(self)
         self.pending_scene_change = None
 
-        # 🎵 SISTEMA DE ÁUDIO
+         # 🎵 SISTEMA DE ÁUDIO
         self.audio_manager = audio_manager
+        
+        # 🎵 TIMELINE MUSICAL
+        self.music_timeline = MusicTimeline(self.audio_manager)
         
         # 🌑 TRANSIÇÃO INICIAL
         self.initial_transition_active = True
@@ -59,20 +63,23 @@ class SceneManager(Base):
         print("🎵 Inicializando sistema de áudio...")
         if self.audio_manager.initialized:
             print("✅ Sistema de áudio pronto")
+
+            self._setup_global_music_timeline()
             
             # 🎵 PRÉ-CARREGA MÚSICAS DO SEU PROJETO
             print("🎵 Carregando músicas do projeto...")
-            self.audio_manager.load_music("Drigsan - Code.mp3", "drigsan_code")
+            self.audio_manager.load_music("drigsan_code.mp3", "drigsan_code")
             self.audio_manager.load_music("happy.mp3", "happy")
             self.audio_manager.load_music("tristeza.mp3", "tristeza")
-            self.audio_manager.load_music("Maison Dubai 3.mp3", "maison_dubai")
+            self.audio_manager.load_music("puto.mp3", "puto")
             self.audio_manager.load_music("loop_trance.mp3", "loop_trance")
+            self.audio_manager.load_music("mom1.mp3", "mom1")
+            self.audio_manager.load_music("mom2.mp3", "mom2")
+            self.audio_manager.load_music("quim.mp3", "quim")
             
             # 🔊 PRÉ-CARREGA EFEITOS SONOROS
             self.audio_manager.load_sound("aplausos.mp3", "aplausos")
             self.audio_manager.load_sound("carsound.mp3", "carsound")
-            self.audio_manager.load_sound("mom2.mp3", "mom2")
-            self.audio_manager.load_sound("son.mp3", "son")
             
             print("✅ Todas as músicas carregadas")
             
@@ -262,6 +269,37 @@ class SceneManager(Base):
         print("🌑 Iniciando transição inicial de 5 segundos...")
         self._start_initial_transition()
 
+    def _setup_global_music_timeline(self):
+        """Configura timeline musical para toda a animação"""
+        
+        # 🎵 DEFINE TIMELINE MUSICAL COMPLETA
+        timeline_config = [
+            {"start": 0, "end": 45, "music": "quim", "volume": 0.9, "loop": True, "fade_in": 2.0},
+            
+            # SILÊNCIO (45-47s)
+            {"start": 45, "end": 47, "music": None, "volume": 0.0, "loop": False},
+            
+            # MOM1 (48-50s)
+            {"start": 48, "end": 50, "music": "mom1", "volume": 0.8, "loop": False, "fade_in": 1.0},
+            
+            # SILÊNCIO (50-52s) 
+            {"start": 50, "end": 52, "music": None, "volume": 0.0, "loop": False},
+            
+            # PUTO (52-54s)
+            {"start": 52, "end": 54, "music": "puto", "volume": 0.7, "loop": False, "fade_in": 0.5},
+            
+            # SILÊNCIO (54-56s)
+            {"start": 54, "end": 56, "music": None, "volume": 0.0, "loop": False},
+            
+            # MOM2 (56-66s)
+            {"start": 56, "end": 66, "music": "mom2", "volume": 0.8, "loop": False, "fade_in": 1.0},
+        ]
+        
+        self.music_timeline.set_timeline(timeline_config)
+        self.music_timeline.set_fade_duration(2.0)  # 2s de fade entre músicas
+        
+        print("🎵 Timeline musical global configurada")
+
     def _start_initial_transition(self):
         """Inicia transição inicial de 5s antes da primeira cena"""
         print("🌑 ===== TRANSIÇÃO INICIAL - 5s TELA PRETA =====")
@@ -278,7 +316,6 @@ class SceneManager(Base):
         self.initial_transition_active = True
         
         print("🌑 Transição inicial configurada - 5s de tela preta")
-        print("🎵 Música 'Drigsan - Code' será iniciada na Scene01")
 
     def _clean_scene_completely(self):
         """Limpa scene completamente"""
@@ -316,9 +353,9 @@ class SceneManager(Base):
         next_scene_type = self._get_scene_type(next_index)
         
         # 🎵 FADE-OUT DA MÚSICA ATUAL durante transição
-        if self.audio_manager.is_music_playing:
-            print(f"🔇 Fazendo fade-out da música atual...")
-            self.audio_manager.stop_music(fade_out_time=2.0)
+        #if self.audio_manager.is_music_playing:
+        #    print(f"🔇 Fazendo fade-out da música atual...")
+        #    self.audio_manager.stop_music(fade_out_time=2.0)
         
         # 🎬 SEMPRE USA TRANSIÇÃO PADRÃO (5s fade black)
         transition_config = TransitionPresets.get_scene_transition(current_scene_type, next_scene_type)
@@ -400,6 +437,11 @@ class SceneManager(Base):
         # 🚶 ATUALIZA MOVIMENTO INTERPOLADO
         self.update_movement(self.delta_time)
         
+        if hasattr(self, 'music_timeline') and self.music_timeline:
+            # Calcula tempo global baseado nas cenas
+            global_time = self._calculate_global_timeline()
+            self.music_timeline.update(manual_timeline=global_time)
+        
         # 🎮 CONTROLES MANUAIS APENAS EM CÂMERA LIVRE (e quando não está movendo)
         if self.free_camera_mode and not self.is_moving_to_target:
             if self.manual_control_enabled:
@@ -449,6 +491,36 @@ class SceneManager(Base):
         # Renderiza
         self.renderer.render(self.scene, self.camera)
 
+    def _calculate_global_timeline(self):
+        """Calcula tempo global da animação baseado nas cenas"""
+        
+        # Duração de cada parte
+        INITIAL_TRANSITION = 5.0
+        SCENE_DURATIONS = [30.0, 25.0, 20.0, 30.0, 25.0]  # Durações das scenes
+        TRANSITION_DURATION = 5.0
+        
+        global_time = 0.0
+        
+        # Tempo da transição inicial
+        if self.initial_transition_active:
+            return self.initial_transition_timer
+        
+        global_time += INITIAL_TRANSITION
+        
+        # Tempo das scenes concluídas
+        for i in range(self.current_scene_index):
+            global_time += SCENE_DURATIONS[i] + TRANSITION_DURATION
+        
+        # Tempo da scene atual
+        if self.current_scene and hasattr(self.current_scene, 'manual_timeline'):
+            global_time += self.current_scene.manual_timeline
+        
+        # Tempo da transição atual
+        if self.transitions.is_active():
+            global_time += self.transitions.transition_progress * TRANSITION_DURATION
+        
+        return global_time
+
     def _update_initial_transition(self):
         """Atualiza transição inicial de 5s"""
         delta_time = self.delta_time
@@ -484,12 +556,10 @@ class SceneManager(Base):
         self.initial_transition_active = False
         
         print("✅ TRANSIÇÃO INICIAL CONCLUÍDA")
-        print("🎬 Iniciando Scene01 com música 'Drigsan - Code'")
+        print("🎬 Iniciando Scene01 com timeline musical")
         
-        # 🎵 INICIA MÚSICA DA SCENE01 com fade-in
-        if self.audio_manager.initialized:
-            self.audio_manager.play_music("drigsan_code", loop=True, fade_in_time=2.0)
-            print("🎵 'Drigsan - Code' iniciada com fade-in de 2s")
+        # 🎵 INICIA TIMELINE MUSICAL (em vez de música manual)
+        self.music_timeline.start_timeline()
         
         # 🎬 INICIA PRIMEIRA CENA
         self.start_scene(0)

@@ -185,7 +185,7 @@ class TransitionPresets:
         """Retorna transição - SEMPRE igual (5s fade black)"""
         return {
             "type": "fade_black",
-            "duration": 5.0,  # ← SEMPRE 5 segundos
+            "duration": 3.0,  # ← SEMPRE 5 segundos
             "description": f"Transição {from_scene_type} → {to_scene_type} (5s tela preta)"
         }
     

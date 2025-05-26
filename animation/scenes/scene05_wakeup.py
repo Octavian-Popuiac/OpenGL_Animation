@@ -22,7 +22,7 @@ class WakeUpScene(BaseScene):
             },
             {
                 # 🚶 WAYPOINT 2: Posição final - em pé olhando
-                "position": [-0.700, -0.3, 0.4],  # Posição final em pé
+                "position": [-0.600, -0.3, 0.4],  # Posição final em pé
                 "rotation": 0.0,  # 0° (olhando para frente)
                 "animation": "OLHAR_LOOP",
                 "duration": 5.0,  # 5 segundos de loop olhar
@@ -92,7 +92,7 @@ class WakeUpScene(BaseScene):
         self.movement_start_time = 5.0  # ← Inicia aos 30s
         self.movement_duration = 5.0     # ← Durante 5 segundos
         self.initial_position = [-0.860, 0.100, 0.400]  # Waypoint 1
-        self.final_position = [-0.700, -0.3, 0.4]     # Waypoint 2
+        self.final_position = [-0.600, -0.15, 0.4]     # Waypoint 2
 
         self.reflection_started = False
         self.reflection_start_time = 10.0  # ← CORRIGIDO: 8 segundos
@@ -121,7 +121,7 @@ class WakeUpScene(BaseScene):
         self.andar_current_frame = 0
         self.andar_frame_time = 0.0
         self.andar_total_frames = 0
-        self.andar_frame_duration = 0.2
+        self.andar_frame_duration = 0.15
         
         # 🚶 MOVIMENTO WAYPOINT 2 → 3
         self.second_movement_started = False
